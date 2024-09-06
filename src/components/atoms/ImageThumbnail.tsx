@@ -6,47 +6,38 @@ interface ImageThumbnailProps {
   id: string;
   src: string;
   alt: string;
-  position?: { x: number; y: number };
+  left: number;
+  top: number;
 }
 
-const StyledPaper = styled(Paper)<{ isDragging: boolean }>(
-  ({ theme, isDragging }) => ({
-    width: 100,
-    height: 100,
-    margin: theme.spacing(1),
-    cursor: 'move',
-    opacity: isDragging ? 0.5 : 1,
-    position: 'absolute',
-    zIndex: 1000,
-  })
-);
+const StyledPaper = styled(Paper)({
+  width: 100,
+  height: 100,
+  position: 'absolute',
+  cursor: 'move',
+  transition: 'opacity 0.2s',
+  '&.dragging': {
+    opacity: 0.5,
+  },
+});
 
-const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
-  id,
-  src,
-  alt,
-  position,
-}) => {
+const ImageThumbnail: React.FC<ImageThumbnailProps> = ({ id, src, alt, left, top }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'IMAGE',
-    item: { id, src, type: 'IMAGE' },
+    item: { id, src, left, top },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
-  }));
+  }), [id, src, left, top]);
 
   return (
-    <StyledPaper
+    <StyledPaper 
       ref={drag}
-      elevation={3}
-      isDragging={isDragging}
-      style={position ? { left: position.x, top: position.y } : undefined}
+      elevation={3} 
+      className={isDragging ? 'dragging' : ''}
+      style={{ left, top }}
     >
-      <img
-        src={src}
-        alt={alt}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-      />
+      <img src={src} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
     </StyledPaper>
   );
 };

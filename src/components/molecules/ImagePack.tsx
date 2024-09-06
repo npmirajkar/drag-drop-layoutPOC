@@ -1,49 +1,59 @@
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { Paper, Typography, styled } from '@mui/material';
+import { useDrop } from 'react-dnd';
 import ImageThumbnail from '../atoms/ImageThumbnail';
 
 interface ImagePackProps {
   title: string;
-  images: string[];
-  packIndex: number;
+  images: Array<{ id: string; src: string; left: number; top: number }>;
+  onDrop: (id: string, left: number, top: number) => void;
 }
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   marginBottom: theme.spacing(2),
-  cursor: 'pointer',
+  position: 'relative',
+  height: 300,
+  transition: 'background-color 0.3s',
+  '&.drop-active': {
+    backgroundColor: theme.palette.action.hover,
+  },
 }));
 
-const ThumbnailContainer = styled('div')(({ theme }) => ({
-  display: 'flex',
-  flexWrap: 'wrap',
-  marginTop: theme.spacing(2),
-}));
+const ImagePack: React.FC<ImagePackProps> = ({ title, images, onDrop }) => {
+  const ref = useRef<HTMLDivElement>(null);
 
-const ImagePack: React.FC<ImagePackProps> = ({ title, images, packIndex }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: 'IMAGE',
+    drop: (item: any, monitor) => {
+      const offset = monitor.getClientOffset();
+      const containerRect = ref.current?.getBoundingClientRect();
+      if (offset && containerRect) {
+        const left = offset.x - containerRect.left;
+        const top = offset.y - containerRect.top;
+        onDrop(item.id, left, top);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
+    }),
+  }), [onDrop]);
 
-  const handleClick = () => {
-    setIsOpen(!isOpen);
-  };
+  drop(ref);
 
   return (
-    <StyledPaper elevation={3}>
-      <Typography variant="h6" onClick={handleClick}>
-        {title}
-      </Typography>
-      {isOpen && (
-        <ThumbnailContainer>
-          {images.map((image, index) => (
-            <ImageThumbnail
-              key={`${packIndex}-${index}`}
-              id={`${packIndex}-${index}`}
-              src={image}
-              alt={`Image ${index + 1}`}
-            />
-          ))}
-        </ThumbnailContainer>
-      )}
+    <StyledPaper elevation={3} ref={ref} className={isOver ? 'drop-active' : ''}>
+      <Typography variant="h6">{title}</Typography>
+      {images.map((image) => (
+        <ImageThumbnail
+          key={image.id}
+          id={image.id}
+          src={image.src}
+          alt={`Image ${image.id}`}
+          left={image.left}
+          top={image.top}
+        />
+      ))}
     </StyledPaper>
   );
 };

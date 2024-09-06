@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { Paper, Typography, styled } from '@mui/material';
 import ImageThumbnail from '../atoms/ImageThumbnail';
@@ -6,69 +6,62 @@ import ImageThumbnail from '../atoms/ImageThumbnail';
 interface LayoutSectionProps {
   title: string;
   allowDrop: boolean;
-  images: Array<{
-    id: string;
-    src: string;
-    position: { x: number; y: number };
-  }>;
-  onDrop: (item: any, position: { x: number; y: number }) => void;
-  onMove: (id: string, position: { x: number; y: number }) => void;
+  images: Array<{ id: string; src: string; left: number; top: number }>;
+  onDrop: (id: string, left: number, top: number) => void;
 }
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
-  minHeight: 200,
+  minHeight: 300,
   marginBottom: theme.spacing(2),
   position: 'relative',
+  transition: 'background-color 0.2s',
+  '&.drop-active': {
+    backgroundColor: theme.palette.action.hover,
+  },
 }));
 
-const DropArea = styled('div')({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-});
+const LayoutSection: React.FC<LayoutSectionProps> = ({ title, allowDrop, images, onDrop }) => {
+  const ref = useRef<HTMLDivElement>(null);
 
-const LayoutSection: React.FC<LayoutSectionProps> = ({
-  title,
-  allowDrop,
-  images,
-  onDrop,
-  onMove,
-}) => {
-  const [, drop] = useDrop(
-    () => ({
-      accept: 'IMAGE',
-      drop: (item: any, monitor) => {
-        const offset = monitor.getClientOffset();
-        if (offset && allowDrop) {
-          const containerRect = monitor.getTargetRect() as DOMRect;
-          const x = offset.x - containerRect.left;
-          const y = offset.y - containerRect.top;
-          onDrop(item, { x, y });
-        }
-      },
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: 'IMAGE',
+    canDrop: () => allowDrop,
+    drop: (item: any, monitor) => {
+      const offset = monitor.getClientOffset();
+      const containerRect = ref.current?.getBoundingClientRect();
+      if (offset && containerRect) {
+        const left = Math.max(0, offset.x - containerRect.left);
+        const top = Math.max(0, offset.y - containerRect.top);
+        onDrop(item.id, left, top);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver() && allowDrop,
     }),
-    [allowDrop, onDrop]
-  );
+  }), [allowDrop, onDrop]);
+
+  drop(ref);
 
   return (
-    <StyledPaper elevation={3}>
+    <StyledPaper 
+      elevation={3} 
+      ref={ref}
+      className={isOver ? 'drop-active' : ''}
+    >
       <Typography variant="h6" gutterBottom>
         {title}
       </Typography>
-      <DropArea ref={drop}>
-        {images.map((image) => (
-          <ImageThumbnail
-            key={image.id}
-            id={image.id}
-            src={image.src}
-            alt={`Image ${image.id}`}
-            position={image.position}
-          />
-        ))}
-      </DropArea>
+      {images.map((image) => (
+        <ImageThumbnail
+          key={image.id}
+          id={image.id}
+          src={image.src}
+          alt={`Image ${image.id}`}
+          left={image.left}
+          top={image.top}
+        />
+      ))}
     </StyledPaper>
   );
 };
