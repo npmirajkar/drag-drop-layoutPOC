@@ -8,11 +8,14 @@ interface ImageThumbnailProps {
   alt: string;
   left: number;
   top: number;
+  width: number;
+  height: number;
+  productId?: number;
+  name?: string;
+  photography?: string;
 }
 
 const StyledPaper = styled(Paper)({
-  width: 100,
-  height: 100,
   position: 'absolute',
   cursor: 'move',
   transition: 'opacity 0.2s',
@@ -21,21 +24,21 @@ const StyledPaper = styled(Paper)({
   },
 });
 
-const ImageThumbnail: React.FC<ImageThumbnailProps> = ({ id, src, alt, left, top }) => {
+const ImageThumbnail: React.FC<ImageThumbnailProps> = ({ id, src, alt, left, top, width, height, productId, name, photography }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'IMAGE',
-    item: { id, src, left, top },
+    item: { id, src, left, top, width, height, productId, name, photography },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
-  }), [id, src, left, top]);
+  }), [id, src, left, top, width, height, productId, name, photography]);
 
   return (
     <StyledPaper 
       ref={drag}
       elevation={3} 
       className={isDragging ? 'dragging' : ''}
-      style={{ left, top }}
+      style={{ left, top, width, height }}
     >
       <img src={src} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
     </StyledPaper>

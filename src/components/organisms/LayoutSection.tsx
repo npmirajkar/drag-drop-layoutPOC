@@ -6,8 +6,29 @@ import ImageThumbnail from '../atoms/ImageThumbnail';
 interface LayoutSectionProps {
   title: string;
   allowDrop: boolean;
-  images: Array<{ id: string; src: string; left: number; top: number }>;
+  images: Array<{
+    id: string;
+    src: string;
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    productId?: number;
+    name?: string;
+    photography?: string;
+  }>;
   onDrop: (id: string, left: number, top: number) => void;
+  cutNumber: number;
+  position: { row: number; column: number };
+  span: { columns: number; rows: number };
+  cutDetails: {
+    headline: string;
+    callToAction: string;
+    copyDirection: string;
+    stylingDirection: string;
+    artDirectorNotes: string;
+    copywriterNotes: string;
+  };
 }
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -21,7 +42,16 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   },
 }));
 
-const LayoutSection: React.FC<LayoutSectionProps> = ({ title, allowDrop, images, onDrop }) => {
+const LayoutSection: React.FC<LayoutSectionProps> = ({ 
+  title, 
+  allowDrop, 
+  images, 
+  onDrop, 
+  cutNumber, 
+  position, 
+  span, 
+  cutDetails 
+}) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const [{ isOver }, drop] = useDrop(() => ({
@@ -55,11 +85,8 @@ const LayoutSection: React.FC<LayoutSectionProps> = ({ title, allowDrop, images,
       {images.map((image) => (
         <ImageThumbnail
           key={image.id}
-          id={image.id}
-          src={image.src}
+          {...image}
           alt={`Image ${image.id}`}
-          left={image.left}
-          top={image.top}
         />
       ))}
     </StyledPaper>
