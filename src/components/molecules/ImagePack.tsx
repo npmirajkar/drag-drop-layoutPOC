@@ -3,9 +3,21 @@ import { Paper, Typography, styled } from '@mui/material';
 import { useDrop } from 'react-dnd';
 import ImageThumbnail from '../atoms/ImageThumbnail';
 
+interface Image {
+  id: string;
+  src: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  productId?: number;
+  name?: string;
+  photography?: string;
+}
+
 interface ImagePackProps {
   title: string;
-  images: Array<{ id: string; src: string; left: number; top: number }>;
+  images: Image[];
   onDrop: (id: string, left: number, top: number) => void;
 }
 
@@ -52,6 +64,11 @@ const ImagePack: React.FC<ImagePackProps> = ({ title, images, onDrop }) => {
           alt={`Image ${image.id}`}
           left={image.left}
           top={image.top}
+          width={image.width}
+          height={image.height}
+          productId={image.productId}
+          name={image.name}
+          photography={image.photography}
         />
       ))}
     </StyledPaper>

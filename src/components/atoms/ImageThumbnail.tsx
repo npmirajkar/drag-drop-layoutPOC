@@ -24,7 +24,9 @@ const StyledPaper = styled(Paper)({
   },
 });
 
-const ImageThumbnail: React.FC<ImageThumbnailProps> = ({ id, src, alt, left, top, width, height, productId, name, photography }) => {
+const ImageThumbnail: React.FC<ImageThumbnailProps> = ({ 
+  id, src, alt, left, top, width, height, productId, name, photography 
+}) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'IMAGE',
     item: { id, src, left, top, width, height, productId, name, photography },
